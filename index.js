@@ -27,9 +27,9 @@ const { v4: uuidv4 } = require("uuid");
     filteredRepos.forEach((repo) => {
       let repoInfo = {
         repoID: uuidv4(),
-        repoName: repo.repoContainerName,
-        repoLanguage: "",
-        repoStars: "",
+        repoName: repo.repoName,
+        repoLanguage: repo.repoLanguage,
+        repoStars: repo.repoStars,
       };
       parsedObjects = [...parsedObjects, repoInfo];
     });
@@ -42,9 +42,17 @@ const { v4: uuidv4 } = require("uuid");
     let repoContainersArray = [...repoContainers];
 
     let filteredRepos = repoContainersArray.map((repoContainer) => {
-      let repoContainerName = repoContainer.children[1].children[0].innerText;
+      let repoName = "";
+      let repoLanguage = "";
+      let repoStars = "";
+      if (repoContainer.children.length === 4) {
+        repoName = repoContainer.children[1].children[0].innerText;
+        repoLanguage =
+          repoContainer.children[3].children[0].children[1].innerText;
+        repoStars = repoContainer.children[3].children[1].innerText;
+      }
 
-      return { repoContainerName };
+      return { repoName, repoLanguage, repoStars };
     });
 
     let parseObjects = await window.generateObjects(filteredRepos);
