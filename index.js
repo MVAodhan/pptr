@@ -5,21 +5,31 @@ const { v4: uuidv4 } = require("uuid");
   const browser = await puppeteer.launch({ headless: false });
   const page = await browser.newPage();
   await page.goto("https://github.com/trending");
+
   await page.on("load").click("#select-menu-language > summary");
+
+  await page.waitForTimeout(2000);
 
   await page.type(
     "#select-menu-language > details-menu > div.select-menu-filters > filter-input > input",
     "javascript",
     { delay: 100 }
   );
+  await page.waitForTimeout(2000);
   await page.keyboard.press("Enter");
+
+  await page.waitForTimeout(2000);
+
+  // await page.waitForNavigation();
 
   await page.exposeFunction("generateObjects", (filteredRepos) => {
     let parsedObjects = [];
     filteredRepos.forEach((repo) => {
       let repoInfo = {
         repoID: uuidv4(),
-        repoName: repo,
+        repoName: repo.repoContainerName,
+        repoLanguage: "",
+        repoStars: "",
       };
       parsedObjects = [...parsedObjects, repoInfo];
     });
@@ -28,13 +38,13 @@ const { v4: uuidv4 } = require("uuid");
   });
 
   const repos = await page.evaluate(async () => {
-    let repoContainer = document.querySelectorAll("article.Box-row");
-    let repoContainersArray = [...repoContainer];
+    let repoContainers = document.querySelectorAll("article.Box-row");
+    let repoContainersArray = [...repoContainers];
 
-    let filteredRepos = repoContainersArray.map((repo) => {
-      let repoContainerName = repo.children[1].children[0].innerText;
+    let filteredRepos = repoContainersArray.map((repoContainer) => {
+      let repoContainerName = repoContainer.children[1].children[0].innerText;
 
-      return repoContainerName;
+      return { repoContainerName };
     });
 
     let parseObjects = await window.generateObjects(filteredRepos);
